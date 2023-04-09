@@ -1,0 +1,55 @@
+version: '3.3'
+# Define services
+services:
+# App backend service
+  notificationsvc:
+# Configuration for building the docker image for the backend service
+    build: notificationservice
+    container_name: notificationservice
+    image: sweethomeapp/notificationservice
+    ports:
+    - "8082:8082" # Forward the exposed port 8082 to port 8082 on the host machine
+    networks:
+      - microservicesnet
+    environment:
+      EUREKA_HOST_NAME: 172.18.0.2
+    depends_on:
+      - serviceregistry # This service depends on serviceregistry. Start that first.
+  paymentsvc:
+    build: paymentservice
+    container_name: paymentservice
+    image: sweethomeapp/paymentservice
+    ports:
+    - "8083:8083" # Map the exposed port 3000 on container to port 3000 on the host machine
+    networks:
+      - microservicesnet
+    environment:
+      EUREKA_HOST_NAME: 172.18.0.2
+    depends_on:
+      - serviceregistry # This service depends on serviceregistry. Start that first.
+# Frontend Service
+  bookingsvc:
+    build: bookingservice
+    container_name: bookingservice
+    image: sweethomeapp/bookingservice
+    ports:
+    - "8080:8080" # Map the exposed port 8080 on container to port 8080 on the host machine
+    networks:
+      - microservicesnet
+    environment:
+      EUREKA_HOST_NAME: 172.18.0.2
+    depends_on:
+      - serviceregistry # This service depends on serviceregistry. Start that first.
+  serviceregistry:
+    build: eurekaserver 
+    container_name: serviceregistry
+    image: sweethomeapp/serviceregistry
+    ports:
+    - "8761:8761" # Map the exposed port 8761 on container to port 8761 on the host machine
+    networks:
+      - microservicesnet
+    environment:
+      EUREKA_HOST_NAME: 172.18.0.2
+networks:
+  microservicesnet:
+    driver: bridge
